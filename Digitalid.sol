@@ -1,7 +1,8 @@
-pragma solidity 0.5.1;
+pragma solidity 0.5.11;
 contract Digital_Id{
     uint256 public peopleCount=0;
     mapping(uint =>Person)public people;
+    address owner;
     
     struct Person{
         uint id;
@@ -10,8 +11,18 @@ contract Digital_Id{
         
     }
     
-    function addPerson(string memory _firstName, string memory _lastName , uint256 _cpf) public{
-        bool check = addCluster(_cpf);
+    
+    modifier onlyOwner(){
+        require(owner==msg.sender);
+        _;
+    }
+    
+    constructor() public{
+        owner=msg.sender;
+    }
+    
+    function addPerson(string memory _firstName, string memory _lastName , uint256 _cpf) public onlyOwner{
+        bool check = chechIfExists(_cpf);
         if(check){
             incrementPeople();
             people[_cpf] = Person(peopleCount,_firstName,_lastName);
@@ -22,10 +33,10 @@ contract Digital_Id{
         peopleCount+=1;
     } 
     
-    function addCluster(uint256 _cpf) private view returns(bool){
+    function chechIfExists(uint256 _cpf) private view returns(bool){
         if (people[_cpf].id>0){
    
-            return false;
+            revert("User Already Exists");
         }
         else{
            
